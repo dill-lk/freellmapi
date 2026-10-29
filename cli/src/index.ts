@@ -24,6 +24,20 @@ function rootUrl(url: string): string {
   return url.trim().replace(/\/+$/, '').replace(/\/v1$/i, '');
 }
 
+export function validateApiKey(apiKey: string): string {
+  const value = apiKey.trim();
+  if (!value) throw new Error('An API key is required');
+  for (let index = 0; index < value.length; index += 1) {
+    if (value.charCodeAt(index) > 0xff) {
+      throw new Error(
+        'The API key contains non-ASCII characters. Do not paste the masked key '
+        + '(••••) from the dashboard; click Show or Copy and paste the full key.',
+      );
+    }
+  }
+  return value;
+}
+
 function validateProfile(profile: string): string {
   if (
     !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(profile)
@@ -161,10 +175,11 @@ async function promptForKey(provider = false): Promise<string> {
 }
 
 async function catalog(url: string, apiKey: string, availableOnly = true): Promise<CatalogModel[]> {
+  const validatedApiKey = validateApiKey(apiKey);
   let response: Response;
   try {
     response = await fetch(`${rootUrl(url)}/v1/models${availableOnly ? '?available=true' : ''}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
+      headers: { Authorization: `Bearer ${validatedApiKey}` },
       signal: AbortSignal.timeout(10_000),
     });
   } catch (error) {

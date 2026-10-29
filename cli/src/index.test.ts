@@ -2,11 +2,27 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { claudeLaunchEnv, codexArgs, main, parseArgs, resolvePinnedModel, unsupportedNodeVersion } from './index.js';
+import {
+  claudeLaunchEnv,
+  codexArgs,
+  main,
+  parseArgs,
+  resolvePinnedModel,
+  unsupportedNodeVersion,
+  validateApiKey,
+} from './index.js';
 import { UnknownModelError } from './models.js';
 import type { CatalogModel } from './types.js';
 
 describe('CLI arguments and launchers', () => {
+  it('rejects a masked or otherwise non-ASCII API key with a useful message', () => {
+    expect(validateApiKey('sk-real-key')).toBe('sk-real-key');
+    expect(() => validateApiKey('sk-real••••key')).toThrow(
+      'Do not paste the masked key',
+    );
+    expect(() => validateApiKey('   ')).toThrow('An API key is required');
+  });
+
   it('defaults to the gateway port when no URL is configured', () => {
     const previous = process.env.FREELLMAPI_URL;
     delete process.env.FREELLMAPI_URL;
