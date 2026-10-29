@@ -86,6 +86,9 @@ export default function AgentsPage() {
   const shownKey = keyData?.apiKey
     ? (revealKey ? keyData.apiKey : masked(keyData.apiKey))
     : '…'
+  const manualKey = revealKey
+    ? (keyData?.apiKey ?? '<unified-key>')
+    : '<click Show API key above>'
 
   return (
     <div>
@@ -126,7 +129,7 @@ export default function AgentsPage() {
           // The copied snippet is pasted into config files — keep it
           // locale-independent.
           const realConnection = `BASE_URL=${endpoint}\nAPI_KEY=${keyData?.apiKey ?? '<unified-key>'}`
-          const shownConnection = `BASE_URL=${endpoint}\nAPI_KEY=${shownKey}`
+          const shownConnection = `BASE_URL=${endpoint}\nAPI_KEY=${manualKey}`
           // What the tool actually is, in one plain sentence. `t` echoes the
           // key back when neither the active locale nor English defines it, so
           // a catalog entry added ahead of its copy falls back to the wire

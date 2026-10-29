@@ -404,6 +404,24 @@ jobs:
           path: desktop/dist-electron/FreeLLMAPI-Setup-*.exe
           if-no-files-found: error
 
+      - name: Prepare Windows patch artifact
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $patch = "$env:RUNNER_TEMP\freellmapi-patch"
+          New-Item -ItemType Directory -Force -Path "$patch\resources" | Out-Null
+          Copy-Item desktop/dist-electron/win-unpacked/resources/app.asar "$patch\resources\app.asar"
+          Copy-Item desktop/dist-electron/win-unpacked/resources/client-dist "$patch\resources\client-dist" -Recurse
+          Copy-Item desktop/patch/apply-patch.ps1 "$patch\apply-patch.ps1"
+
+      - name: Upload Windows patch artifact
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-patch
+          path: ${{ runner.temp }}/freellmapi-patch
+          if-no-files-found: error
+
       # Upload the assets and nothing else. softprops/action-gh-release always
       # PATCHes the release (name, body, draft state, target commitish) before it
       # uploads, and that PATCH started coming back
